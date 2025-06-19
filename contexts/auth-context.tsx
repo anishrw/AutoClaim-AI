@@ -1,6 +1,11 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { doc, getDoc } from "firebase/firestore"
+import { auth, db } from "@/lib/firebase"
+import { signInWithEmailAndPassword } from "firebase/auth"
+import type { User as FirestoreUser } from "@/.next/types"
+
 
 interface Vehicle {
   id: string
@@ -115,22 +120,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate API call delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    const foundUser = mockUsers.find((u) => u.email === email && u.password === password)
 
-    if (foundUser) {
-      const { password: _, ...userWithoutPassword } = foundUser
-      setUser(userWithoutPassword as User)
+const login = async (email: string, password: string): Promise<boolean> => {
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, password)
+    const firebaseUser = cred.user
+
+    // 🔥 Load full user profile from Firestore
+    const userDocRef = doc(db, "users", firebaseUser.uid)
+    const userSnap = await getDoc(userDocRef)
+
+    if (userSnap.exists()) {
+      const fullUserData = userSnap.data() as User
+
+      setUser(fullUserData) // ✅ now types match
       setIsLoggedIn(true)
-      localStorage.setItem("autoclaim_user", JSON.stringify(userWithoutPassword))
+      localStorage.setItem("autoclaim_user", JSON.stringify(fullUserData))
       return true
+    } else {
+      console.error("User document not found in Firestore")
+      return false
     }
-
+  } catch (err) {
+    console.error("Login error:", err)
     return false
   }
+}
+
+  
 
   const logout = () => {
     setUser(null)
