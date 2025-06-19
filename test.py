@@ -8,6 +8,12 @@ client = OpenAI(
 )
 
 # 3) Build the prompt
+
+
+# NOTE:
+# in the XML prompt, see the XML format it outputs from Open AI
+# ask chatgpt how to parse it to get the information
+
 xml_prompt = f"""
 You are an insurance claims AI. Analyze the attached image (supplied via image_url)
 and detect any scratches, dents, broken lamps, shattered glass, or flat tires.
@@ -27,6 +33,11 @@ Here is the image:
 """
 
 # 4) Call the vision-enabled model
+
+# This gets the image from a URL
+# to make it compatible with the website, make it retrieve it from a file
+# ask CLAUDE, not chatpgt on how to do this
+
 resp = client.chat.completions.create(
     model="gpt-4o",  # Use gpt-4o for better vision capabilities
     messages=[
