@@ -1,5 +1,4 @@
 "use client"
-
 import type React from "react"
 
 import { useState } from "react"
@@ -10,7 +9,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
 import Link from "next/link"
+import { auth, db } from "@/lib/firebase"
+import { createUserWithEmailAndPassword } from "firebase/auth"
+import { doc, setDoc } from "firebase/firestore"
+
+
 
 interface Vehicle {
   id: string
@@ -19,6 +24,15 @@ interface Vehicle {
   year: string
   mileage: string
   vin?: string
+}
+
+interface user {
+  firstName: string
+  lastName: string
+  email: string
+  password: string
+  vehicles: Vehicle[]
+  createdAt: string
 }
 
 export default function SignUpPage() {
@@ -44,15 +58,45 @@ export default function SignUpPage() {
     vin: "",
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+  
     if (currentStep === 1) {
       setCurrentStep(2)
-    } else {
-      // Handle final sign up logic here
-      console.log("Sign up:", { formData, vehicles })
+      return
+    }
+  
+    // Final submit logic (Firebase signup)
+    try {
+      const { email, password, firstName, lastName } = formData
+  
+      const cred = await createUserWithEmailAndPassword(auth, email, password)
+      const uid = cred.user.uid
+  
+      await setDoc(doc(db, "users", uid), {
+        id: uid,
+        firstName,
+        lastName,
+        email,
+        phone: "",           // Placeholder
+        address: "",         // Placeholder
+        city: "",            // Placeholder
+        state: "",           // Placeholder
+        zipCode: "",         // Placeholder
+        avatar: "/placeholder.svg?height=100&width=100",
+        vehicles,
+        createdAt: new Date().toISOString(),
+      })
+      
+  
+      alert("Account created successfully!")
+      window.location.href = "/auth/signin"
+    } catch (err) {
+      console.error("Signup error:", err)
+      alert("Failed to create account. Check console for details.")
     }
   }
+  
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
