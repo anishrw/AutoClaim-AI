@@ -1,7 +1,7 @@
 # statefarm-hackday-2025
 
 🧠 AutoClaim AI — Risk Scoring & Payout Optimization System
-(State Farm Hackathon — 1st Place, June 2025)
+(State Farm Hackathon, June 2025)
 
 AutoClaim AI is a machine-learning-driven insurance intelligence platform that predicts post-accident claim payouts and actuarial risk levels from real-world crash data.
 It combines computer vision, loss modeling, and dynamic payout optimization to simulate how insurers assess and price claims in modern financial systems.
